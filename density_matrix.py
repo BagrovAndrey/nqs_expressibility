@@ -9,7 +9,7 @@ def vector_merger(vec1, vec2, dim1, dim2):
     binary1 = np.binary_repr(vec1, dim1)
     binary2 = np.binary_repr(vec2, dim2)
 
-    return(int(binary1+binary2,2))
+    return int(binary1+binary2,2)
 
 def density_matrix_element(sub_dim, dim, vec1, vec2, basis, amplitudes):
 
@@ -37,13 +37,12 @@ def density_matrix_element(sub_dim, dim, vec1, vec2, basis, amplitudes):
 
     size_of_traced = int(scipy.special.binom(dim - sub_dim, magnetization - sub_magnetization))
 
-    matrix_element = 0
+    matrix_element = np.sum(amplitudes[index_1:index_1 + size_of_traced] * amplitudes[index_2:index_2 + size_of_traced])
 
-    for iloop in range(size_of_traced):
+#    for iloop in range(size_of_traced):
+#        matrix_element = matrix_element + amplitudes[iloop+index_1]*amplitudes[iloop+index_2]    
 
-        matrix_element = matrix_element + amplitudes[iloop+index_1]*amplitudes[iloop+index_2]    
-
-    return(matrix_element)
+    return matrix_element
 
 def density_matrix(sub_dim, sub_magnetization, basis, amplitudes):
 
@@ -58,7 +57,7 @@ def density_matrix(sub_dim, sub_magnetization, basis, amplitudes):
     sector_matrix = [[density_matrix_element(sub_dim, dim, sub_sector[iloop], sub_sector[jloop], basis, amplitudes) for iloop in range(len(sub_sector))] for jloop in range(len(sub_sector))]
     sector_matrix = np.array(sector_matrix)
 
-    return(sector_matrix)
+    return sector_matrix
 
 def full_density_matrix(sub_dim, basis, amplitudes):
 
@@ -70,7 +69,7 @@ def full_density_matrix(sub_dim, basis, amplitudes):
         sector_matrix = density_matrix(sub_dim, kloop, basis, amplitudes)
         rhoA.append(sector_matrix)
 
-    return(rhoA)
+    return rhoA
 
 def lambda_log_lambda(x):
     
@@ -79,7 +78,7 @@ def lambda_log_lambda(x):
     else:
         y = 0
     
-    return(y)
+    return y
 
 def main():
     with open("./basis_1_N=20_k=10.dat", "rb") as input:
