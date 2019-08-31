@@ -1,0 +1,18 @@
+{
+    "number_spins": 20,
+    "magnetisation": 0,
+    "model": "/home/astronaut/Documents/nqs_expressibility/models/dense_20_ReLU_20_ReLU.py",
+    "output": "/home/astronaut/Documents/nqs_expressibility/logs/dense_20_ReLU_20_ReLU",
+    "lr" : 0.001, 
+    "number_runs": 2,
+    "use_jit": true,
+    "gpu" : false,
+    "training": {
+        "epochs": 4,
+        "batch_size": 128,
+        "frequency": 10,
+        "optimiser": "lambda m: torch.optim.RMSprop(m.parameters())",
+        "load_best": true,
+        "verbose": true
+    }
+}
