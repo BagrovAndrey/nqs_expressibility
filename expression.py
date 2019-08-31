@@ -89,12 +89,12 @@ def train(ψ, train_set, gpu, lr, **config):
             if important:
                 losses = []
                 accuracies = []
-            for batch_index, (batch_x, batch_y, batch_weight) in enumerate(dataloader):
+            for batch_index, (batch_x, batch_y) in enumerate(dataloader):
                 if gpu:
-                    batch_x, batch_y, batch_weight = batch_x.cuda(), batch_y.cuda(), batch_weight.cuda()
+                    batch_x, batch_y = batch_x.cuda(), batch_y.cuda()
                 optimiser.zero_grad()
                 predicted = ψ(batch_x)
-                loss = loss_fn(predicted, batch_y, batch_weight)
+                loss = loss_fn(predicted, batch_y)
                 loss.backward()
                 optimiser.step()
                 update_count += 1
@@ -159,9 +159,9 @@ def overlap(ψ, samples, target, gpu):
     size = samples.size()[0]
     for idxs in np.split(np.arange(size), np.arange(0, size, 10000))[1:]:
         predicted = ψ(samples[idxs]).cpu().type(torch.FloatTensor)[:, 0]
-        overlap += torch.sum(predicted.type(torch.FloatTensor) * target.type(torch.FloatTensor)).item()
-        norm_bra += torch.sum(torch.sqr(predicted.type(torch.FloatTensor))).item()
-        norm_ket += torch.sum(torch.sqr(target.type(torch.FloatTensor))).item()
+        overlap += torch.sum(predicted.type(torch.FloatTensor) * target.type(torch.FloatTensor)[idxs]).item()
+        norm_bra += torch.sum(predicted.type(torch.FloatTensor) ** 2).item()
+        norm_ket += torch.sum(target.type(torch.FloatTensor)[idxs] ** 2).item()
     if gpu:
         ψ = ψ.cpu()
         samples = samples.cpu()
@@ -221,10 +221,9 @@ def try_one_dataset(n_spins, magnetisation, output, Net, number_runs, train_opti
 
             total_loss = 0.0
             for idxs in np.split(np.arange(size), np.arange(0, size, 10000))[1:]:
-                total_loss += loss_fn(predicted[idxs], dataset[1][idxs]).item()
-
+                total_loss += loss_fn(predicted[idxs], dataset[1][idxs]).item() * len(idxs)
+            total_loss /= size
         best_overlap = overlap(module, *dataset, gpu)
-        print('total dataset overlap = ' + str(best_overlap) + 'total dataset accuracy = ' + str(rest_accuracy))
 
         if gpu:
             module = module.cpu()
@@ -276,7 +275,7 @@ def main():
     )
     with open(results_filename, "a") as results_file:
         results_file.write(
-                ("{:.3f} {:.5f}" + " {:.10e}" * 22 + "\n").format(j2, rt, *tuple(local_result))
+                ("{:.10e}" * 4 + "\n").format(*tuple(local_result))
         )
     return
 
