@@ -161,11 +161,11 @@ def overlap_during_training(ψ, samples, target, gpu):
         predicted = ψ(samples[idxs]).cpu().type(torch.FloatTensor)[:, 0]
         overlap += torch.sum(predicted.type(torch.FloatTensor) * target[idxs].cpu().type(torch.FloatTensor)).item()
         norm_bra += torch.sum(predicted.type(torch.FloatTensor) ** 2).item()
-        norm_ket += torch.sum(target.type(torch.FloatTensor)[idxs] ** 2).item()
+        norm_ket += torch.sum(target[idxs].type(torch.FloatTensor) ** 2).item()
     if gpu:
         samples = samples.cpu()
         target = target.cpu()
-
+    print(np.sqrt(norm_bra), np.sqrt(norm_ket))
     return overlap / np.sqrt(norm_bra) / np.sqrt(norm_ket)
 
 
@@ -182,7 +182,7 @@ def overlap(ψ, samples, target, gpu):
         predicted = ψ(samples[idxs]).cpu().type(torch.FloatTensor)[:, 0]
         overlap += torch.sum(predicted.type(torch.FloatTensor) * target[idxs].cpu().type(torch.FloatTensor)).item()
         norm_bra += torch.sum(predicted.type(torch.FloatTensor) ** 2).item()
-        norm_ket += torch.sum(target.type(torch.FloatTensor)[idxs] ** 2).item()
+        norm_ket += torch.sum(target[idxs].type(torch.FloatTensor) ** 2).item()
     if gpu:
         ψ = ψ.cpu()
         samples = samples.cpu()
@@ -267,6 +267,7 @@ def main():
     number_spins = config["number_spins"]
     magnetisation = config["magnetisation"]
     number_runs = config["number_runs"]
+    number_vectors = config["number_vectors"]
     gpu = config["gpu"]
     lr = config["lr"]
     mag = config["magnetisation"]
@@ -290,13 +291,14 @@ def main():
 
     local_output = output
     os.makedirs(local_output, exist_ok=True)
-    local_result = try_one_dataset(
-        number_spins, mag, local_output, Net, number_runs, config["training"], lr = lr, gpu = gpu,
-    )
-    with open(results_filename, "a") as results_file:
-        results_file.write(
-                ("{:.10e}" * 4 + "\n").format(*tuple(local_result))
+    for _ in range(number_vectors):
+        local_result = try_one_dataset(
+            number_spins, mag, local_output, Net, number_runs, config["training"], lr = lr, gpu = gpu,
         )
+        with open(results_filename, "a") as results_file:
+            results_file.write(
+                    ("{:.10e}" * 4 + "\n").format(*tuple(local_result))
+            )
     return
 
 
