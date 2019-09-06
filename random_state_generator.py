@@ -30,7 +30,7 @@ def generate_binaries(length, hamming):
     return(set_of_vectors)
 
 def generate_amplitude(dimension):
-    set_of_amplitudes = np.random.uniform(0, 1, size = dimension).astype(np.float32)
+    set_of_amplitudes = np.random.uniform(-1, 1, size = dimension).astype(np.float32)
     normalization = np.sqrt(np.einsum('i,i', set_of_amplitudes, set_of_amplitudes))
     set_of_amplitudes = set_of_amplitudes / normalization
 
