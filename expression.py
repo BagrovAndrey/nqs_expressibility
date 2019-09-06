@@ -81,7 +81,8 @@ def train(ψ, train_set, gpu, lr, **config):
     )
     checkpoints = set(_make_checkpoints_for(epochs, steps=100)) if verbose else set()
     train_loss_history = []
-
+    print(overlap_during_training(ψ, train_set[0], train_set[1], gpu))
+    print(train_set[0], train_set[1], train_set[0].size(), train_set[1].size())
     def training_loop():
         update_count = 0
         for epoch_index in range(epochs):
