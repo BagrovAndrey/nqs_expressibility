@@ -17,6 +17,7 @@ import tempfile
 import time
 from typing import Dict, List, Tuple, Optional
 import random_state_generator as rsg
+import density_matrix as dm
 
 import numpy as np
 import torch
@@ -125,6 +126,8 @@ def train(ψ, train_set, gpu, lr, **config):
     stopped_early = training_loop()
     finish = time.time()
     print_info("Finished training in {:.2f} seconds!".format(finish - start))
+
+    print_scaling(ψ, train_set[0], gpu)
     if gpu:
         ψ = ψ.cpu()
     return ψ, train_loss_history
@@ -174,9 +177,33 @@ def overlap_during_training(ψ, samples, target, gpu):
     if gpu:
         samples = samples.cpu()
         target = target.cpu()
-    print(norm_bra, norm_ket, overlap)
     return overlap / np.sqrt(norm_bra) / np.sqrt(norm_ket)
 
+def print_scaling(ψ, samples, gpu):
+    if gpu:
+        samples = samples.cuda()
+    predicted = torch.squeeze(ψ(samples)).cpu().detach()
+    if gpu:
+        samples = samples.cpu()
+    scaling = []
+
+    for sub_dim in range(1,10):
+        rho = dm.full_density_matrix(sub_dim, list(vectors_raw), predicted.numpy())
+        x = 0
+        entropy = 0
+
+        for iloop in range(len(rho)):
+            x = x + np.einsum('ii', rho[iloop])
+            entang_spectrum = np.linalg.eig(rho[iloop])[0]
+            entropy = entropy - sum(map(dm.lambda_log_lambda, entang_spectrum))
+
+        print(sub_dim)
+        print(entropy)
+
+        scaling.append(entropy)
+
+    print(scaling)
+    return
 
 def overlap(ψ, samples, target, gpu):
     if gpu:
@@ -200,10 +227,12 @@ def overlap(ψ, samples, target, gpu):
     return overlap / np.sqrt(norm_bra) / np.sqrt(norm_ket)
 
 def generate_dateset(number_spins, magnetisation):
+    global vectors_raw
     hamming = (number_spins - magnetisation) // 2
     dimension = int(scipy.special.binom(number_spins, hamming))
 
     vectors = np.array(rsg.generate_binaries(number_spins, hamming))
+    vectors_raw = deepcopy(vectors)
     vectors = np.array([rsg.spin2array(vec, number_spins) for vec in vectors])
     amplitudes = np.array(rsg.generate_amplitude(dimension))
 
