@@ -63,7 +63,7 @@ def train(ψ, train_set, gpu, lr, **config):
     
     epochs = config["epochs"]
     optimiser = config['optimiser'](ψ)
-
+    print(optimiser, ψ)
     loss_fn = config["loss"]
     check_frequency = config["frequency"]
     load_best = True
@@ -91,14 +91,13 @@ def train(ψ, train_set, gpu, lr, **config):
         update_count = 0
         for epoch_index in range(epochs):
             important = epoch_index in checkpoints
-            if important:
+            if True:
                 losses = []
-                accuracies = []
             for batch_index, (batch_x, batch_y) in enumerate(dataloader):
                 if gpu:
                     batch_x, batch_y = batch_x.cuda(), batch_y.cuda()
                 optimiser.zero_grad()
-                predicted = ψ(batch_x)
+                predicted = torch.squeeze(ψ(batch_x))
                 loss = loss_fn(predicted, batch_y)
                 loss.backward()
                 optimiser.step()
@@ -106,12 +105,11 @@ def train(ψ, train_set, gpu, lr, **config):
                 train_loss_history.append(
                     (update_count, epoch_index, loss.item())
                 )
-                if important:
+                if True:
                     losses.append(loss.item())
 
             if important:
                 losses = torch.tensor(losses)
-                accuracies = torch.tensor(accuracies)
                 print_info(
                     "{:3d}%: train loss     = {:.3e} ± {:.2e}; train loss     ∈ [{:.3e}, {:.3e}]; overlap = {:.5e}".format(
                         100 * (epoch_index + 1) // epochs,
@@ -162,14 +160,21 @@ def overlap_during_training(ψ, samples, target, gpu):
     norm_bra = 0.0
     norm_ket = 0.0
     size = samples.size()[0]
+    predicted = torch.squeeze(ψ(samples)).cpu()
+    overlap = torch.dot(predicted, target.cpu()).item()
+    norm_bra = torch.dot(predicted, predicted).item()
+    norm_ket = torch.dot(target.cpu(), target.cpu()).item()
+    '''
     for idxs in np.split(np.arange(size), np.arange(0, size, 10000))[1:]:
         predicted = ψ(samples[idxs]).cpu().type(torch.FloatTensor)[:, 0]
         overlap += torch.sum(predicted.type(torch.FloatTensor) * target[idxs].cpu().type(torch.FloatTensor)).item()
         norm_bra += torch.sum(predicted.type(torch.FloatTensor) ** 2).item()
         norm_ket += torch.sum(target[idxs].type(torch.FloatTensor) ** 2).item()
+    '''
     if gpu:
         samples = samples.cpu()
         target = target.cpu()
+    print(norm_bra, norm_ket, overlap)
     return overlap / np.sqrt(norm_bra) / np.sqrt(norm_ket)
 
 
@@ -205,6 +210,7 @@ def generate_dateset(number_spins, magnetisation):
     dataset = tuple(
         torch.from_numpy(x) for x in [vectors, amplitudes]
     )
+    print(vectors, amplitudes)
     return dataset
 
 def try_one_dataset(n_spins, magnetisation, output, Net, number_runs, train_options, 
@@ -221,12 +227,12 @@ def try_one_dataset(n_spins, magnetisation, output, Net, number_runs, train_opti
     loss_fn = Loss()
     train_options = deepcopy(train_options)
     train_options["loss"] = loss_fn
+    print(lr)
     train_options["optimiser"] = eval(train_options["optimiser"][:-1] + str(', lr = ') + str(lr) + ')')
 
     stats = []
     for i in range(number_runs):
         module = Net(dataset[0].size(1))
-
         module, train_history = train(
             module, dataset, gpu, lr, **train_options
         )
