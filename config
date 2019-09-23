@@ -1,19 +1,11 @@
 {
     "number_spins": 20,
     "magnetisation": 0,
-<<<<<<< HEAD
     "model": "/home/andrey/nqs_expressibility/nqs_expressibility/models/dense_20_ReLU_20_ReLU.py",
     "output": "/home/andrey/nqs_expressibility/nqs_expressibility/logs/dense_20_ReLU_20_ReLU",
     "lr" : 0.00003, 
-    "number_vectors": 2,
-    "number_runs": 2,
-=======
-    "model": "/home/astrakhantsev/nqs_expressibility/models/dense_20_ReLU_20_ReLU.py",
-    "output": "/home/astrakhantsev/nqs_expressibility/logs/dense_20_ReLU_20_ReLU",
-    "lr" : 0.00003, 
+    "number_vectors": 10,
     "number_runs": 1,
-    "number_vectors" : 10,
->>>>>>> b3f6792a1967dca6d438cd40d4df1cce094cd087
     "use_jit": true,
     "gpu" : false,
     "training": {
