@@ -73,7 +73,10 @@ for t in range(5000):
         norm = torch.dot(y_pred,y_pred)
         overlap = torch.dot(y, y_pred)
         print(t, abs(overlap.item()/np.sqrt(norm.item())))
-
+        nqs_amplitudes_aux = y_pred/np.sqrt(norm.item())
+        nqs_amplitudes = nqs_amplitudes_aux.detach().numpy()
+        nqs_file = open("./NQS_amplitudes_"+str(t)+".dat", "wb")
+        pickle.dump(nqs_amplitudes, nqs_file)
 
 """    y_pred = torch.squeeze(model(x))
     loss = loss_fn(y_pred, y)

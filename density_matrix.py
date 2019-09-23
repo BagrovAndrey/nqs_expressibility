@@ -83,7 +83,8 @@ def lambda_log_lambda(x):
 def main():
     with open("./basis_1_N=20_k=10.dat", "rb") as input:
         loaded_vectors = pickle.load(input)
-    with open("./amplitudes_1_N=20_k=10.dat","rb") as input:
+#    with open("./amplitudes_1_N=20_k=10.dat","rb") as input:
+    with open("./linear_fit.dat","rb") as input:
         loaded_amplitudes = pickle.load(input)
 
     scaling = []
@@ -99,8 +100,7 @@ def main():
             entang_spectrum = np.linalg.eig(rho[iloop])[0]
             entropy = entropy - sum(map(lambda_log_lambda, entang_spectrum))
 
-        print(sub_dim)
-        print(entropy)
+        print(entropy,",")
          
         scaling.append(entropy)
 
