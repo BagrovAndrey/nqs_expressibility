@@ -27,6 +27,8 @@ import scipy.io as sio
 from scipy.special import comb
 from itertools import combinations
 
+
+amplitudes_raw = []
 # "Borrowed" from pytorch/torch/serialization.py.
 # All credit goes to PyTorch developers.
 def _with_file_like(f, mode, body):
@@ -182,13 +184,14 @@ def overlap_during_training(ψ, samples, target, gpu):
 def print_scaling(ψ, samples, gpu):
     if gpu:
         samples = samples.cuda()
-    predicted = torch.squeeze(ψ(samples)).cpu().detach()
+    predicted = torch.squeeze(ψ(samples)).cpu().detach().numpy()
+    predicted = predicted / np.sqrt(np.sum(predicted ** 2))
     if gpu:
         samples = samples.cpu()
     scaling = []
 
     for sub_dim in range(1,10):
-        rho = dm.full_density_matrix(sub_dim, list(vectors_raw), predicted.numpy())
+        rho = dm.full_density_matrix(sub_dim, list(vectors_raw), predicted)
         x = 0
         entropy = 0
 
@@ -228,6 +231,7 @@ def overlap(ψ, samples, target, gpu):
 
 def generate_dateset(number_spins, magnetisation):
     global vectors_raw
+    global amplitudes_raw
     hamming = (number_spins - magnetisation) // 2
     dimension = int(scipy.special.binom(number_spins, hamming))
 
@@ -235,7 +239,7 @@ def generate_dateset(number_spins, magnetisation):
     vectors_raw = deepcopy(vectors)
     vectors = np.array([rsg.spin2array(vec, number_spins) for vec in vectors])
     amplitudes = np.array(rsg.generate_amplitude(dimension))
-
+    amplitudes_raw = deepcopy(amplitudes)
     dataset = tuple(
         torch.from_numpy(x) for x in [vectors, amplitudes]
     )
