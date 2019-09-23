@@ -26,7 +26,7 @@ y = y.squeeze()
 
 dataloader = torch.utils.data.DataLoader(
     torch.utils.data.TensorDataset(x, y),
-    batch_size=256,
+    batch_size=128,
     shuffle=True,
     )
 
@@ -36,10 +36,10 @@ model = torch.nn.Sequential(
     torch.nn.ReLU(),
     torch.nn.Linear(H, H),
     torch.nn.ReLU(),
-    torch.nn.Linear(H, H),
+    torch.nn.Linear(H, 2*H),
     torch.nn.ReLU(),
-#    torch.nn.Linear(H, H),
-#    torch.nn.ReLU(),
+    torch.nn.Linear(2*H, H),
+    torch.nn.ReLU(),
     torch.nn.Linear(H, D_out),
 )
 
@@ -54,10 +54,10 @@ print(loss_fn(y_pred, y))
 # the model for us. Here we will use Adam; the optim package contains many other
 # optimization algoriths. The first argument to the Adam constructor tells the
 # optimizer which Tensors it should update.
-learning_rate = 3e-5
+learning_rate = 1e-4
 optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
 
-for t in range(5000):
+for t in range(1000):
 
     for ibatch, (batch_x, batch_y) in enumerate(dataloader):
     
@@ -69,7 +69,7 @@ for t in range(5000):
         optimizer.step()
 
     y_pred = torch.squeeze(model(x))
-    if t % 100 == 99:
+    if t % 10 == 9:
         norm = torch.dot(y_pred,y_pred)
         overlap = torch.dot(y, y_pred)
         print(t, abs(overlap.item()/np.sqrt(norm.item())))

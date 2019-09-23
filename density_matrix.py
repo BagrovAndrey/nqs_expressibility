@@ -84,7 +84,8 @@ def main():
     with open("./basis_1_N=20_k=10.dat", "rb") as input:
         loaded_vectors = pickle.load(input)
 #    with open("./amplitudes_1_N=20_k=10.dat","rb") as input:
-    with open("./linear_fit.dat","rb") as input:
+#    with open("./linear_fit.dat","rb") as input:
+    with open("./NQS_amplitudes_459.dat","rb") as input:
         loaded_amplitudes = pickle.load(input)
 
     scaling = []
