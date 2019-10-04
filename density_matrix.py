@@ -4,6 +4,8 @@ import pickle
 import random_state_generator
 import matplotlib
 
+# Just git test
+
 def vector_merger(vec1, vec2, dim1, dim2):
 
     binary1 = np.binary_repr(vec1, dim1)
@@ -81,16 +83,17 @@ def lambda_log_lambda(x):
     return y
 
 def main():
-    with open("./basis_1_N=20_k=10.dat", "rb") as input:
+    with open("./basis_1_N=24_k=12.dat", "rb") as input:
         loaded_vectors = pickle.load(input)
-#    with open("./amplitudes_1_N=20_k=10.dat","rb") as input:
+#    with open("./amplitudes_1_N=24_k=12.dat","rb") as input:
 #    with open("./linear_fit.dat","rb") as input:
-    with open("./NQS_amplitudes_459.dat","rb") as input:
+    with open("./stacked_full.dat","rb") as input:
+#    with open("./NQS_amplitudes_989.dat","rb") as input:
         loaded_amplitudes = pickle.load(input)
 
     scaling = []
 
-    for sub_dim in range(1,10):
+    for sub_dim in range(1,12):
 
         rho = full_density_matrix(sub_dim, loaded_vectors, loaded_amplitudes)
         x = 0
