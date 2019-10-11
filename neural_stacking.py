@@ -13,13 +13,21 @@ with open("./amplitudes_1_N=24_k=12.dat","rb") as input:
 
 dim = len(np.binary_repr(loaded_vectors[-1]))
 
+binary_basis = np.array([rsg.spin2array(vec, dim) for vec in loaded_vectors])
+preliminary_torch_basis = torch.from_numpy(binary_basis)
+
+# Generating extended basis that leads to a change in the neural network amplitude distribution
+
+all_up = torch.ones([len(preliminary_torch_basis)])
+all_down = -all_up
+
+x_aux = torch.stack([all_up, all_down, all_down, all_down, all_down], dim = 1)
+x = torch.cat([x_aux, preliminary_torch_basis], dim=1)
+
 # N is batch size; D_in is input dimension;
 # H is hidden dimension; D_out is output dimension.
 
-N, D_in, H, D_out = len(loaded_vectors), dim, 32, 1
-
-binary_basis = np.array([rsg.spin2array(vec, dim) for vec in loaded_vectors])
-x = torch.from_numpy(binary_basis)
+N, D_in, H, D_out = len(loaded_vectors), dim + 5, 32, 1
 
 # This function generates a stack of neural networks that would be further combined into uncorrelated states 
 
@@ -34,10 +42,10 @@ def neural_stack(amp_depth, sign_depth, power1, power2):
         )
 
     indices = torch.randperm(x.size(1))
-    permute_x = x[:, indices]
+#    permute_x = x[:, indices]
 
     amp_initial = ((torch.abs(torch.squeeze(amp_model(x)))).detach().numpy())**power1
-    permute_initial = ((torch.abs(torch.squeeze(amp_model(permute_x)))).detach().numpy())**power1
+#    permute_initial = ((torch.abs(torch.squeeze(amp_model(permute_x)))).detach().numpy())**power1
 
     sign_model = torch.nn.Sequential(
         torch.nn.Linear(D_in, H),
@@ -88,15 +96,15 @@ def neural_stack(amp_depth, sign_depth, power1, power2):
             aux_sign = [((torch.abs(torch.squeeze(sign_model(x)))).detach().numpy())**power2]
             sign_blueprint_stack = np.concatenate((sign_blueprint_stack, aux_sign), axis=0)
 
-    return amplitude_stack, sign_blueprint_stack, permute_initial
+    return amplitude_stack, sign_blueprint_stack#, permute_initial
 
 evaluated_stack = neural_stack(5,10,1/15.,1/30.) # Generating stacks
 
 amplitude_aux = np.prod(evaluated_stack[0], axis = 0)
 amplitude_vector = amplitude_aux/np.linalg.norm(amplitude_aux)  # Resulting vector of amplitudes
 
-permute_aux = evaluated_stack[2]
-permute_vector = permute_aux/np.linalg.norm(permute_aux)  # Resulting vector of permuted amplitudes
+#permute_aux = evaluated_stack[2]
+#permute_vector = permute_aux/np.linalg.norm(permute_aux)  # Resulting vector of permuted amplitudes
 
 sign_aux = np.prod(evaluated_stack[1], axis = 0)
 sign_blueprint = sign_aux/np.linalg.norm(sign_aux) # Resulting vector that can be used to generate signs
@@ -116,8 +124,8 @@ rand_vector = np.multiply(amplitude_vector, rand_sign_vec)
 amp_file = open("./stacked_amp.dat", "wb")
 pickle.dump(amplitude_vector, amp_file)
 
-perm_file = open("./stacked_perm.dat", "wb")
-pickle.dump(permute_vector, perm_file)
+#perm_file = open("./stacked_perm.dat", "wb")
+#pickle.dump(permute_vector, perm_file)
 
 # Saving signful quantum state
 
