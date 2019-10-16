@@ -156,9 +156,9 @@ def lambda_log_lambda(x):
 def main():
     with open("./basis_1_N=24_k=12.dat", "rb") as input:
         loaded_vectors = pickle.load(input)
-    with open("./amplitudes_1_N=24_k=12.dat", "rb") as input:
+    #with open("./amplitudes_1_N=24_k=12.dat", "rb") as input:
         #    with open("./linear_fit.dat","rb") as input:
-        # with open("./stacked_full.dat", "rb") as input:
+    with open("./stacked_hom_sign.dat", "rb") as input:
         #    with open("./NQS_amplitudes_989.dat","rb") as input:
         loaded_amplitudes = pickle.load(input)
 

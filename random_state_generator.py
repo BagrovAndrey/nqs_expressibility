@@ -59,17 +59,26 @@ def main():
     print(generate_binaries(10,0))
 
     name_id = 1
-    length = 20
-    hamming = 10
+    length = 24
+    hamming = 12
     dimension = int(scipy.special.binom(length, hamming))
 
     vectors = generate_binaries(length, hamming)
     amplitudes = generate_amplitude(dimension)
+    
+# A uniform vector of amplitudes - to test the role of sign structure
 
-    print(type(amplitudes))
+#    amplitudes = np.ones(dimension).astype(np.float32)
+#    normalization = np.sqrt(np.einsum('i,i', amplitudes, amplitudes))
+#    amplitudes = amplitudes / normalization
 
-    plt.plot(amplitudes)
-    plt.show()
+    #signs = np.sign(np.random.uniform(-1, 1, size = dimension).astype(np.float32))
+    #amplitudes = np.einsum('i,i->i', amplitudes, signs)
+
+    print(len(amplitudes), amplitudes)
+
+#    plt.plot(amplitudes)
+#    plt.show()
 
     zipped_psi = zip(vectors, amplitudes)
     dict_psi = dict(zipped_psi)
